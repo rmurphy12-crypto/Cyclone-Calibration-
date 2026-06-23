@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cyclone 3 Cal">
+<meta name="theme-color" content="#1b241f">
+<title>Cyclone 3 — Sprayer Calibration</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
+:root{
+  --paper:#eaeee6; --surface:#ffffff; --ink:#1b241f; --ink-soft:#67726a;
+  --line:#d3dacc; --green:#3f7a2a; --green-bright:#5fa336;
+  --amber:#b1701a; --blue:#2c6e8f;
+  --green-tint:#e8f2df; --amber-tint:#f6ecda; --blue-tint:#e2eef4; --ink-tint:#eef1ec;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+.cy-ink-soft{color:var(--ink-soft);}
+
+.cy-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;padding-top:calc(18px + env(safe-area-inset-top));border-bottom:2px solid var(--ink);background:var(--surface);}
+.cy-brand{display:flex;flex-direction:column;gap:2px;}
+.cy-mark{font-family:'Archivo';font-weight:800;font-size:23px;letter-spacing:-.5px;line-height:1;}
+.cy-mark b{color:var(--green-bright);}
+.cy-sub{font-size:12px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;font-weight:500;}
+.cy-spec{display:flex;gap:8px;}
+.cy-chip{font-family:'JetBrains Mono';font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 9px;border:1.5px solid var(--line);border-radius:5px;color:var(--ink-soft);}
+.cy-chip-accent{background:var(--ink);color:#fff;border-color:var(--ink);}
+.cy-chip-mini{font-size:10px;padding:3px 7px;background:var(--amber-tint);color:var(--amber);border:none;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+
+.cy-tabs{display:flex;gap:2px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;overflow-x:auto;}
+.cy-tab{display:flex;align-items:center;gap:7px;padding:13px 15px;background:none;border:none;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:14px;color:var(--ink-soft);border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;}
+.cy-tab:hover{color:var(--ink);}
+.cy-tab.is-active{color:var(--ink);border-bottom-color:var(--green-bright);}
+.cy-tab svg{width:16px;height:16px;}
+
+.cy-main{max-width:1080px;margin:0 auto;padding:22px;padding-bottom:calc(22px + env(safe-area-inset-bottom));}
+.cy-grid{display:grid;grid-template-columns:1fr 380px;gap:18px;align-items:start;}
+@media(max-width:840px){.cy-grid{grid-template-columns:1fr;}}
+.cy-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;}
+
+.cy-h2{font-family:'Archivo';font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin:22px 0 11px;display:flex;align-items:center;gap:8px;}
+.cy-h2.first{margin-top:0;}
+.cy-h2-bare{color:var(--ink);font-size:17px;letter-spacing:-.2px;text-transform:none;}
+.cy-note{font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 6px;}
+.cy-subhead{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 2px;grid-column:1/-1;}
+
+.cy-nozzle-row{display:flex;gap:9px;}
+.cy-select{flex:1;font-family:'Inter';font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);cursor:pointer;}
+.cy-select-sm{flex:0 0 78px;}
+.cy-select:focus,.cy-input:focus{outline:none;border-color:var(--green-bright);box-shadow:0 0 0 3px var(--green-tint);}
+
+.cy-dial{display:flex;gap:8px;}
+.cy-dial-pos{position:relative;flex:1;aspect-ratio:1;max-width:62px;border:2px solid var(--line);border-radius:50%;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cy-dial-pos:hover{border-color:var(--ink-soft);}
+.cy-dial-pos.is-active{border-color:var(--ink);background:var(--ink);}
+.cy-dial-num{font-family:'Archivo';font-weight:800;font-size:19px;color:var(--ink-soft);}
+.cy-dial-pos.is-active .cy-dial-num{color:#fff;}
+.cy-dial-dot{position:absolute;bottom:7px;width:5px;height:5px;border-radius:50%;background:var(--green-bright);}
+.cy-dial-pos.is-active .cy-dial-dot{background:#fff;}
+.cy-chartref{display:flex;align-items:center;gap:14px;margin-top:11px;padding:9px 12px;background:var(--ink-tint);border-radius:7px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+.cy-chartref b{font-size:13px;color:var(--ink);}
+
+.cy-methods{display:flex;flex-direction:column;gap:8px;}
+.cy-method{text-align:left;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;transition:all .14s;}
+.cy-method:hover{border-color:var(--ink-soft);}
+.cy-method.is-active{border-color:var(--green-bright);background:var(--green-tint);}
+.cy-method-title{display:block;font-family:'Archivo';font-weight:700;font-size:14px;}
+.cy-method-desc{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.4;}
+
+.cy-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.cy-inline-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;grid-column:1/-1;}
+.cy-field{display:flex;flex-direction:column;gap:5px;}
+.cy-field.full{grid-column:1/-1;}
+.cy-field-label{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+.cy-unit{font-family:'JetBrains Mono';font-style:normal;font-size:11px;color:var(--green);font-weight:500;}
+.cy-hint{font-size:11px;color:var(--ink-soft);font-weight:400;}
+.cy-input{width:100%;font-family:'Inter';font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);}
+.cy-input.mono{font-family:'JetBrains Mono';}
+.cy-textarea{resize:vertical;line-height:1.4;font-size:15px;}
+.cy-inline{display:flex;gap:8px;}
+.cy-inline .cy-input{flex:1;}
+
+.cy-readout{position:sticky;top:60px;}
+@media(max-width:840px){.cy-readout{position:static;}}
+.cy-readout-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.cy-eyebrow{font-family:'JetBrains Mono';font-size:11px;font-weight:500;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase;}
+.cy-bignum{display:flex;flex-direction:column;align-items:flex-start;padding:18px 0 4px;border-top:1px solid var(--line);}
+.cy-bignum-val{font-size:52px;font-weight:700;line-height:1;letter-spacing:-1px;}
+.cy-bignum-unit{font-size:13px;color:var(--ink-soft);margin-top:6px;font-weight:500;}
+.cy-band{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:5px;margin:10px 0 16px;}
+.v-green .cy-bignum-val,.cy-band.v-green{color:var(--green);} .cy-band.v-green{background:var(--green-tint);}
+.v-blue .cy-bignum-val,.cy-band.v-blue{color:var(--blue);} .cy-band.v-blue{background:var(--blue-tint);}
+.v-amber .cy-bignum-val,.cy-band.v-amber{color:var(--amber);} .cy-band.v-amber{background:var(--amber-tint);}
+.v-ink-soft .cy-bignum-val,.cy-band.v-ink-soft{color:var(--ink-soft);} .cy-band.v-ink-soft{background:var(--ink-tint);}
+
+.cy-readout-rows{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.cy-readrow{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:8px;padding:11px 13px;background:var(--surface);}
+.cy-readrow-icon{color:var(--ink-soft);display:flex;}
+.cy-readrow-label{font-size:13px;color:var(--ink-soft);}
+.cy-readrow-value{font-size:15px;font-weight:700;text-align:right;}
+.cy-readrow-sub{grid-column:2/4;text-align:right;font-size:11px;color:var(--ink-soft);}
+.cy-readrow-sub.ok{color:var(--green);} .cy-readrow-sub.warn{color:var(--amber);}
+.cy-perg{font-size:12px;color:var(--ink-soft);margin:14px 0;line-height:1.5;}
+.cy-perg b{color:var(--ink);}
+
+.cy-btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Archivo';font-weight:700;font-size:14px;transition:background .15s;}
+.cy-btn-primary:hover{background:#0e1611;} .cy-btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.cy-btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface);border:1.5px solid var(--line);border-radius:7px;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:13px;color:var(--ink);transition:all .14s;}
+.cy-btn-ghost:hover{border-color:var(--ink-soft);} .cy-btn-ghost:disabled{opacity:.4;cursor:not-allowed;}
+.cy-btn-danger{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:#fff;border:1.5px solid #e7c4c0;border-radius:7px;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:13px;color:#b3372c;}
+.cy-btn-danger:hover{background:#fbf0ef;}
+.cy-icon-btn{background:none;border:none;cursor:pointer;color:var(--ink-soft);padding:4px;display:flex;border-radius:5px;}
+.cy-icon-btn:hover{background:var(--ink-tint);color:var(--ink);}
+.cy-toast{margin-top:11px;text-align:center;font-size:13px;font-weight:600;color:var(--green);background:var(--green-tint);padding:9px;border-radius:7px;}
+
+.cy-saved-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
+.cy-saved-actions{display:flex;gap:8px;}
+.cy-matrix-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);-webkit-overflow-scrolling:touch;}
+.cy-matrix,.cy-ref{border-collapse:collapse;width:100%;min-width:560px;}
+.cy-matrix th,.cy-matrix td,.cy-ref th,.cy-ref td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);}
+.cy-matrix thead th{font-family:'Archivo';font-weight:700;font-size:12px;padding:11px 10px;background:var(--ink-tint);text-align:center;color:var(--ink);letter-spacing:.02em;}
+.cy-matrix-corner{text-align:left!important;}
+.cy-matrix-row{font-family:'Inter';font-weight:600;font-size:13px;padding:10px 12px;text-align:left;background:var(--surface);white-space:nowrap;}
+.cy-tag{display:inline-block;margin-left:7px;font-family:'JetBrains Mono';font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-tint);padding:2px 5px;border-radius:3px;}
+.cy-matrix td{padding:0;text-align:center;height:58px;vertical-align:middle;}
+.cy-cell{width:100%;height:58px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--surface);transition:filter .12s;}
+.cy-cell:hover{filter:brightness(.96);}
+.cy-cell-gpk{font-size:17px;font-weight:700;}
+.cy-cell-sub{font-size:10px;color:var(--ink-soft);}
+.cy-cell.v-green{background:var(--green-tint);} .cy-cell.v-green .cy-cell-gpk{color:var(--green);}
+.cy-cell.v-blue{background:var(--blue-tint);} .cy-cell.v-blue .cy-cell-gpk{color:var(--blue);}
+.cy-cell.v-amber{background:var(--amber-tint);} .cy-cell.v-amber .cy-cell-gpk{color:var(--amber);}
+.cy-cell-empty{color:var(--line);font-size:18px;font-family:'JetBrains Mono';}
+.cy-matrix tr td:last-child,.cy-matrix tr th:last-child{border-right:none;}
+
+.cy-ref thead th{font-family:'Archivo';font-weight:700;font-size:12px;padding:9px 8px;background:var(--ink-tint);text-align:center;}
+.cy-ref-sub th{font-size:10px;color:var(--ink-soft);font-weight:600;padding:5px 8px;background:var(--surface);}
+.cy-ref td{padding:9px 8px;text-align:center;font-size:13px;}
+.cy-fineprint{font-size:12px;color:var(--ink-soft);line-height:1.55;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
+
+.cy-empty{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:50px 30px;color:var(--ink-soft);background:var(--surface);border:1px dashed var(--line);border-radius:10px;}
+.cy-empty p{max-width:380px;line-height:1.55;font-size:14px;margin:0;}
+.cy-empty b{color:var(--ink);}
+.cy-empty svg{width:28px;height:28px;}
+
+.cy-modal-bg{position:fixed;inset:0;background:rgba(15,20,16,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;}
+.cy-modal{background:var(--surface);border-radius:12px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;border:1px solid var(--line);}
+.cy-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
+.cy-modal-title{font-family:'Archivo';font-weight:800;font-size:20px;margin:2px 0 0;letter-spacing:-.3px;}
+.cy-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+.cy-detail{background:var(--surface);padding:11px 13px;display:flex;flex-direction:column;gap:3px;}
+.cy-detail.is-big{background:var(--ink-tint);}
+.cy-detail-k{font-size:11px;color:var(--ink-soft);letter-spacing:.02em;}
+.cy-detail-v{font-size:16px;font-weight:700;}
+.cy-detail.is-big .cy-detail-v{font-size:22px;}
+.cy-detail-notes{font-size:13px;color:var(--ink-soft);line-height:1.5;margin:13px 0 0;padding:11px;background:var(--ink-tint);border-radius:7px;}
+.cy-modal-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;}
+
+.cy-mix-hero{display:flex;flex-direction:column;padding:8px 0 16px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+.cy-mix-hero-val{font-size:46px;font-weight:700;line-height:1;letter-spacing:-1px;color:var(--green);}
+.cy-mix-hero-unit{font-size:13px;color:var(--ink-soft);margin-top:6px;font-weight:500;}
+.cy-caution{display:flex;gap:8px;align-items:flex-start;margin-top:14px;padding:10px 12px;background:var(--amber-tint);color:var(--amber);border-radius:7px;font-size:12px;line-height:1.45;font-weight:500;}
+.cy-caution svg{flex:0 0 auto;margin-top:1px;width:15px;height:15px;}
+.cy-pad{padding:14px 0;}
+.cy-backup-ta{width:100%;font-family:'JetBrains Mono';font-size:12px;line-height:1.4;padding:10px;border:1.5px solid var(--line);border-radius:7px;resize:vertical;background:var(--ink-tint);color:var(--ink);}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   FlowZone Cyclone 3 — Sprayer Calibration (standalone, offline)
+   Tank fixed at 4 gal (FZVAAJ-3). Timestamps in ET.
+   Persists via localStorage; Backup/Restore guards against loss.
+   ============================================================ */
+(function(){
+"use strict";
+
+var TANK_GAL=4;
+var SPEEDS=[1,2,3,4,5];
+var SQFT_PER_ACRE=43560;
+var PER_ACRE_TO_PER_1000=SQFT_PER_ACRE/1000; // 43.56
+
+var STOCK_NOZZLES=[
+  {id:"cone-mist",name:"Adjustable Cone — Misting",builtin:true,
+   chart:{1:{gpm:0.26,psi:14},2:{gpm:0.31,psi:26},3:{gpm:0.35,psi:38},4:{gpm:0.37,psi:44},5:{gpm:0.40,psi:57}}},
+  {id:"cone-jet",name:"Adjustable Cone — Jet Stream",builtin:true,
+   chart:{1:{gpm:0.29,psi:14},2:{gpm:0.33,psi:18},3:{gpm:0.37,psi:28},4:{gpm:0.42,psi:36},5:{gpm:0.44,psi:44}}},
+  {id:"pin-0",name:"0° Pin Stream",builtin:true,
+   chart:{1:{gpm:0.31,psi:18},2:{gpm:0.42,psi:34},3:{gpm:0.46,psi:40},4:{gpm:0.50,psi:43},5:{gpm:0.53,psi:48}}},
+  {id:"fan-45",name:"45° Fan",builtin:true,
+   chart:{1:{gpm:0.33,psi:15},2:{gpm:0.46,psi:25},3:{gpm:0.51,psi:38},4:{gpm:0.54,psi:42},5:{gpm:0.55,psi:47}}}
+];
+
+var KEY_NOZ="cyclone3:customNozzles", KEY_CAL="cyclone3:calibrations";
+
+/* ---------- icons (inline svg) ---------- */
+function ic(name){
+  var p={
+    sliders:'<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>',
+    gauge:'<path d="M12 14l4-4"/><circle cx="12" cy="14" r="8"/><path d="M4 14a8 8 0 0 1 16 0"/>',
+    table:'<path d="M9 3v18M3 9h18M3 3h18v18H3z"/>',
+    flask:'<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7 15h10"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    droplet:'<path d="M12 2.7s6 6 6 10a6 6 0 0 1-12 0c0-4 6-10 6-10z"/>',
+    save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+    plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+    x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+    trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+    copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+    check:'<polyline points="20 6 9 17 4 12"/>',
+    alert:'<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12" y2="17"/>',
+    db:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>'
+  };
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+(p[name]||'')+'</svg>';
+}
+
+/* ---------- helpers ---------- */
+function num(v){var n=parseFloat(v);return isFinite(n)?n:NaN;}
+function r2(n){return Math.round(n*100)/100;}
+function r1(n){return Math.round(n*10)/10;}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fmtTime(sec){
+  if(!isFinite(sec)||sec<=0) return "—";
+  var m=Math.floor(sec/60), s=Math.round(sec%60);
+  return m>0?(m+":"+String(s).padStart(2,"0")):(s+"s");
+}
+function nowET(){
+  return new Date().toLocaleString("en-US",{timeZone:"America/New_York",year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET";
+}
+function bandFor(gpk){
+  if(!isFinite(gpk)||gpk<=0) return {key:"none",label:"—",v:"ink-soft"};
+  if(gpk<0.75) return {key:"light",label:"light coverage",v:"amber"};
+  if(gpk<1.5) return {key:"std",label:"standard \u22481 gal/1k",v:"green"};
+  if(gpk<=4) return {key:"heavy",label:"heavy / fungicide range",v:"blue"};
+  return {key:"vheavy",label:"very heavy",v:"amber"};
+}
+function estPsiFromFlow(gpm,ratedGpm,ratedPsi){
+  if(!isFinite(gpm)||!isFinite(ratedGpm)||!isFinite(ratedPsi)||ratedGpm<=0) return NaN;
+  return ratedPsi*Math.pow(gpm/ratedGpm,2);
+}
+function methodName(m){return m==="area"?"Area & Volume":m==="flowtime"?"Flow × Time":"1/128 Acre";}
+
+/* ---------- calibration math ---------- */
+function computeArea(o){
+  var a=num(o.areaSqFt),v=num(o.volume),t=num(o.timeSec);
+  if(!isFinite(a)||a<=0||!isFinite(v)||v<=0) return null;
+  var volGal=o.volumeUnit==="oz"?v/128:v;
+  var gpk=(volGal/a)*1000;
+  var timePer1000=(isFinite(t)&&t>0)?(t/a)*1000:NaN;
+  var gpm=(isFinite(t)&&t>0)?volGal/(t/60):NaN;
+  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm};
+}
+function computeFlowTime(o){
+  var bo=num(o.bucketOz),bs=num(o.bucketSec),ca=num(o.coverArea),cs=num(o.coverSec);
+  if(!(isFinite(bo)&&isFinite(bs)&&isFinite(ca)&&isFinite(cs))||bs<=0||ca<=0||cs<=0) return null;
+  var gpm=(bo/128)/(bs/60);
+  var timePer1000=(cs/ca)*1000;
+  var gpk=gpm*(timePer1000/60);
+  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm};
+}
+function compute128(o){
+  var p=num(o.plotSqFt),t=num(o.plotSec),c=num(o.collectedOz);
+  if(!(isFinite(p)&&isFinite(t)&&isFinite(c))||p<=0||t<=0) return null;
+  var gpa=c*(340.3/p);
+  var gpk=gpa/PER_ACRE_TO_PER_1000;
+  var timePer1000=(t/p)*1000;
+  var gpm=(c/128)/(t/60);
+  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm,gpa:gpa};
+}
+
+/* ---------- state + persistence ---------- */
+var state={
+  tab:"calibrate",
+  customNozzles:[],
+  calibrations:{},
+  cal:{nozzleId:STOCK_NOZZLES[0].id,speed:3,method:"flowtime",notes:""},
+  editSeedInputs:null,
+  mix:{sel:"",areaSqFt:"",rate:"",basis:"per1000",unit:"oz"}
+};
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function load(){
+  try{var n=lsGet(KEY_NOZ);if(n) state.customNozzles=JSON.parse(n)||[];}catch(e){}
+  try{var c=lsGet(KEY_CAL);if(c) state.calibrations=JSON.parse(c)||{};}catch(e){}
+}
+function saveNozzles(){lsSet(KEY_NOZ,JSON.stringify(state.customNozzles));}
+function saveCals(){lsSet(KEY_CAL,JSON.stringify(state.calibrations));}
+function allNozzles(){return STOCK_NOZZLES.concat(state.customNozzles);}
+function getNozzle(id){var a=allNozzles();for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i];return null;}
+
+/* ============================================================ shell */
+var app=document.getElementById("app");
+function shell(){
+  app.innerHTML=
+   '<header class="cy-header"><div class="cy-brand"><span class="cy-mark">CYCLONE<b>3</b></span>'+
+   '<span class="cy-sub">Sprayer Calibration Log</span></div>'+
+   '<div class="cy-spec"><span class="cy-chip">FZVAAJ-3</span><span class="cy-chip cy-chip-accent">4&nbsp;GAL TANK</span></div></header>'+
+   '<nav class="cy-tabs" id="cy-tabs"></nav>'+
+   '<main class="cy-main" id="cy-main"></main>';
+  var tabs=[["calibrate","Calibrate","sliders"],["saved","Calibrations","gauge"],["reference","Reference","table"],["mix","Mix","flask"]];
+  var nav=document.getElementById("cy-tabs");
+  tabs.forEach(function(t){
+    var b=document.createElement("button");
+    b.className="cy-tab"+(state.tab===t[0]?" is-active":"");
+    b.innerHTML=ic(t[2])+"<span>"+t[1]+"</span>";
+    b.onclick=function(){state.tab=t[0];render();};
+    nav.appendChild(b);
+  });
+}
+function render(){
+  shell();
+  var m=document.getElementById("cy-main");
+  if(state.tab==="calibrate") renderCalibrate(m);
+  else if(state.tab==="saved") renderSaved(m);
+  else if(state.tab==="reference") renderReference(m);
+  else if(state.tab==="mix") renderMix(m);
+}
+
+/* ============================================================ CALIBRATE */
+function fieldsHTML(method,seed){
+  seed=seed||{};
+  function val(k,d){return esc(seed[k]!=null?seed[k]:(d==null?"":d));}
+  if(method==="area"){
+    return ''+
+    field("Test area","ft²",null,'<input class="cy-input mono" id="f-area" type="text" inputmode="decimal" value="'+val("areaSqFt","1000")+'">')+
+    field("Water used",null,null,'<div class="cy-inline"><input class="cy-input mono" id="f-vol" type="text" inputmode="decimal" value="'+val("volume")+'">'+
+      '<select class="cy-select cy-select-sm" id="f-volunit"><option value="gal"'+(seed.volumeUnit!=="oz"?" selected":"")+'>gal</option><option value="oz"'+(seed.volumeUnit==="oz"?" selected":"")+'>oz</option></select></div>')+
+    field("Time to spray it","sec","optional — enables time/1k + GPM",'<input class="cy-input mono" id="f-time" type="text" inputmode="decimal" value="'+val("timeSec")+'">');
+  }
+  if(method==="flowtime"){
+    return '<div class="cy-subhead">Flow — spray into a bucket at this speed</div>'+
+    field("Collected","oz",null,'<input class="cy-input mono" id="f-boz" type="text" inputmode="decimal" value="'+val("bucketOz")+'">')+
+    field("Over","sec",null,'<input class="cy-input mono" id="f-bsec" type="text" inputmode="decimal" value="'+val("bucketSec","60")+'">')+
+    '<div class="cy-subhead">Coverage — time a real pass over a measured area</div>'+
+    field("Area covered","ft²",null,'<input class="cy-input mono" id="f-carea" type="text" inputmode="decimal" value="'+val("coverArea","1000")+'">')+
+    field("Time",null,"min : sec",'<div class="cy-inline"><input class="cy-input mono" id="f-cmin" type="text" inputmode="decimal" placeholder="min" value="'+val("coverMin")+'">'+
+      '<input class="cy-input mono" id="f-csec" type="text" inputmode="decimal" placeholder="sec" value="'+val("coverSec")+'"></div>');
+  }
+  // p128
+  return field("Plot size","ft²","340 ≈ 18.5 × 18.5 ft",'<input class="cy-input mono" id="f-psqft" type="text" inputmode="decimal" value="'+val("plotSqFt","340")+'">')+
+  field("Time to spray plot",null,"min : sec — avg of 3",'<div class="cy-inline"><input class="cy-input mono" id="f-pmin" type="text" inputmode="decimal" placeholder="min" value="'+val("plotMin")+'">'+
+    '<input class="cy-input mono" id="f-psec" type="text" inputmode="decimal" placeholder="sec" value="'+val("plotSec")+'"></div>')+
+  field("Output collected","oz","catch for that same time",'<input class="cy-input mono" id="f-poz" type="text" inputmode="decimal" value="'+val("collectedOz")+'">');
+}
+function field(label,unit,hint,inner,full){
+  return '<label class="cy-field'+(full?" full":"")+'"><span class="cy-field-label">'+esc(label)+
+    (unit?'<em class="cy-unit">'+esc(unit)+'</em>':"")+
+    (hint?'<span class="cy-hint">'+esc(hint)+'</span>':"")+'</span>'+inner+'</label>';
+}
+function readInputs(method){
+  function v(id){var e=document.getElementById(id);return e?e.value:"";}
+  if(method==="area") return {areaSqFt:v("f-area"),volume:v("f-vol"),volumeUnit:v("f-volunit"),timeSec:v("f-time")};
+  if(method==="flowtime") return {bucketOz:v("f-boz"),bucketSec:v("f-bsec"),coverArea:v("f-carea"),coverMin:v("f-cmin"),coverSec:v("f-csec")};
+  return {plotSqFt:v("f-psqft"),plotMin:v("f-pmin"),plotSec:v("f-psec"),collectedOz:v("f-poz")};
+}
+function computeFromInputs(method,inp){
+  if(method==="area") return computeArea(inp);
+  if(method==="flowtime") return computeFlowTime({bucketOz:inp.bucketOz,bucketSec:inp.bucketSec,coverArea:inp.coverArea,coverSec:(num(inp.coverMin)||0)*60+(num(inp.coverSec)||0)});
+  return compute128({plotSqFt:inp.plotSqFt,collectedOz:inp.collectedOz,plotSec:(num(inp.plotMin)||0)*60+(num(inp.plotSec)||0)});
+}
+function deltaLabel(measured,chartVal){
+  if(!isFinite(measured)||!isFinite(chartVal)||chartVal<=0) return null;
+  var pct=((measured-chartVal)/chartVal)*100;
+  var sign=pct>=0?"+":"\u2212";
+  return {text:sign+Math.abs(pct).toFixed(0)+"% vs chart "+chartVal.toFixed(2),cls:Math.abs(pct)<=10?"ok":"warn"};
+}
+function readRow(icon,label,value,sub){
+  var s="";
+  if(sub&&typeof sub==="object") s='<span class="cy-readrow-sub '+sub.cls+'">'+esc(sub.text)+'</span>';
+  else if(sub) s='<span class="cy-readrow-sub">'+esc(sub)+'</span>';
+  return '<div class="cy-readrow"><span class="cy-readrow-icon">'+ic(icon)+'</span>'+
+    '<span class="cy-readrow-label">'+esc(label)+'</span>'+
+    '<span class="cy-readrow-value mono">'+value+'</span>'+s+'</div>';
+}
+function renderReadoutDynamic(){
+  var host=document.getElementById("cy-readout-dynamic");
+  if(!host) return;
+  var noz=getNozzle(state.cal.nozzleId);
+  var chart=noz&&noz.chart?noz.chart[state.cal.speed]:null;
+  var inp=readInputs(state.cal.method);
+  var res=computeFromInputs(state.cal.method,inp);
+  var estPsi=NaN;
+  if(noz&&!noz.builtin&&res&&isFinite(res.gpm)) estPsi=estPsiFromFlow(res.gpm,num(noz.ratedGpm),num(noz.ratedPsi));
+  var band=bandFor(res?res.gpk:NaN);
+  var gpkTxt=(res&&isFinite(res.gpk))?res.gpk.toFixed(2):"—";
+  var rows=
+    readRow("clock","Time / 1,000 ft²",(res&&isFinite(res.timePer1000Sec))?fmtTime(res.timePer1000Sec):"—")+
+    readRow("droplet","Flow rate",(res&&isFinite(res.gpm))?res.gpm.toFixed(2)+" GPM":"—",(chart&&res&&isFinite(res.gpm))?deltaLabel(res.gpm,chart.gpm):null)+
+    readRow("gauge","Pressure",chart?(chart.psi+" PSI"):(isFinite(estPsi)?(Math.round(estPsi)+" PSI"):"—"),chart?"manual chart":(isFinite(estPsi)?"extrapolated from flow":"set rated GPM/PSI on nozzle"));
+  if(res&&res.gpa!=null&&isFinite(res.gpa)) rows+=readRow("flask","Per acre",res.gpa.toFixed(1)+" gal/ac");
+  var covers=(res&&isFinite(res.gpk)&&res.gpk>0)?Math.round((TANK_GAL/res.gpk)*1000).toLocaleString():"—";
+  host.innerHTML=
+    '<div class="cy-bignum v-'+band.v+'"><span class="cy-bignum-val mono">'+gpkTxt+'</span><span class="cy-bignum-unit">gal / 1,000 ft²</span></div>'+
+    '<div class="cy-band v-'+band.v+'">'+esc(band.label)+'</div>'+
+    '<div class="cy-readout-rows">'+rows+'</div>'+
+    '<div class="cy-perg">Tank load at this rate: a full 4-gal tank covers <b class="mono">'+covers+'</b> ft².</div>';
+}
+function updateChartRef(){
+  var node=document.getElementById("cy-chartref");
+  if(!node) return;
+  var noz=getNozzle(state.cal.nozzleId);
+  var chart=noz&&noz.chart?noz.chart[state.cal.speed]:null;
+  if(chart) node.innerHTML='<span>Manual reference</span><b class="mono">'+chart.gpm.toFixed(2)+' GPM</b><b class="mono">'+chart.psi+' PSI</b>';
+  else node.innerHTML='<span class="cy-ink-soft">No manual reference for this nozzle — your measurement defines it.</span>';
+}
+function renderDialHost(){
+  var host=document.getElementById("cy-dial-host");
+  if(!host) return;
+  host.innerHTML="";
+  SPEEDS.forEach(function(s){
+    var done=!!state.calibrations[state.cal.nozzleId+"|"+s];
+    var b=document.createElement("button");
+    b.className="cy-dial-pos"+(state.cal.speed===s?" is-active":"");
+    b.innerHTML='<span class="cy-dial-num">'+s+'</span>'+(done?'<span class="cy-dial-dot"></span>':"");
+    b.onclick=function(){state.cal.speed=s;renderDialHost();updateChartRef();renderReadoutDynamic();updateExistingChip();};
+    host.appendChild(b);
+  });
+}
+function updateExistingChip(){
+  var c=document.getElementById("cy-exists-chip");
+  if(!c) return;
+  c.style.display=state.calibrations[state.cal.nozzleId+"|"+state.cal.speed]?"inline-block":"none";
+}
+function renderCalibrate(m){
+  // consume edit seed
+  var seed=state.editSeedInputs;
+  state.editSeedInputs=null;
+  var noz=getNozzle(state.cal.nozzleId)||STOCK_NOZZLES[0];
+
+  var customNote=(noz&&!noz.builtin)
+    ?'<p class="cy-note">'+esc(noz.description||"Custom nozzle.")+(isFinite(num(noz.ratedGpm))?(" Rated "+esc(noz.ratedGpm)+" GPM @ "+esc(noz.ratedPsi||40)+" PSI — PSI back-calculated from measured flow."):"")+'</p>'
+    :"";
+
+  var nozOpts='<optgroup label="Stock (FZVAAJ-3)">'+STOCK_NOZZLES.map(function(n){return '<option value="'+n.id+'"'+(n.id===state.cal.nozzleId?" selected":"")+'>'+esc(n.name)+'</option>';}).join("")+'</optgroup>';
+  if(state.customNozzles.length) nozOpts+='<optgroup label="Custom">'+state.customNozzles.map(function(n){return '<option value="'+n.id+'"'+(n.id===state.cal.nozzleId?" selected":"")+'>'+esc(n.name)+'</option>';}).join("")+'</optgroup>';
+
+  var methods=[["flowtime","Flow × Time","Best for this sprayer. Bucket-test the flow, time a 1,000 ft² pass."],
+    ["area","Area & Volume","Spray a known area, measure water used (refill method)."],
+    ["p128","1/128 Acre","340 ft² plot for products labeled gallons per acre."]];
+  var methodHTML=methods.map(function(x){return '<button class="cy-method'+(state.cal.method===x[0]?" is-active":"")+'" data-method="'+x[0]+'">'+
+    '<span class="cy-method-title">'+x[1]+'</span><span class="cy-method-desc">'+x[2]+'</span></button>';}).join("");
+
+  m.innerHTML=
+   '<div class="cy-grid">'+
+    '<section class="cy-card">'+
+      '<h2 class="cy-h2 first">1 · Nozzle</h2>'+
+      '<div class="cy-nozzle-row"><select class="cy-select" id="cy-nozsel">'+nozOpts+'</select>'+
+        '<button class="cy-btn-ghost" id="cy-addnoz">'+ic("plus")+'Add</button></div>'+customNote+
+      '<h2 class="cy-h2">2 · Dial position</h2><div class="cy-dial" id="cy-dial-host"></div>'+
+      '<div class="cy-chartref" id="cy-chartref"></div>'+
+      '<h2 class="cy-h2">3 · Method</h2><div class="cy-methods" id="cy-methods">'+methodHTML+'</div>'+
+      '<h2 class="cy-h2">4 · Measurements</h2><div class="cy-fields" id="cy-fields-host"></div>'+
+      field("Notes","","conditions, pace, overlap, height",'<textarea class="cy-input cy-textarea" id="cy-notes" rows="2" placeholder="e.g. knee-high, steady pace, 50% overlap">'+esc(seed?(state.cal.notes||""):state.cal.notes||"")+'</textarea>',true)+
+    '</section>'+
+    '<section class="cy-card cy-readout">'+
+      '<div class="cy-readout-head"><span class="cy-eyebrow" id="cy-eyebrow"></span>'+
+        '<span class="cy-chip cy-chip-mini" id="cy-exists-chip" style="display:none">already saved</span></div>'+
+      '<div id="cy-readout-dynamic"></div>'+
+      '<button class="cy-btn-primary" id="cy-save"></button>'+
+      '<div id="cy-toast-host"></div>'+
+    '</section>'+
+   '</div>';
+
+  // fields
+  document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,seed&&seed.method===state.cal.method?seed.inputs:null);
+
+  // wire nozzle
+  document.getElementById("cy-nozsel").onchange=function(e){
+    state.cal.nozzleId=e.target.value;
+    // refresh custom note by re-rendering whole view (cheap, preserves nothing critical)
+    renderCalibrate(m);
+  };
+  document.getElementById("cy-addnoz").onclick=openAddNozzle;
+  // methods
+  Array.prototype.forEach.call(document.querySelectorAll("#cy-methods .cy-method"),function(btn){
+    btn.onclick=function(){state.cal.method=btn.getAttribute("data-method");
+      Array.prototype.forEach.call(document.querySelectorAll("#cy-methods .cy-method"),function(b){b.classList.toggle("is-active",b===btn);});
+      document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,null);
+      wireFieldInputs();renderReadoutDynamic();};
+  });
+  // dial + refs
+  renderDialHost();updateChartRef();updateExistingChip();
+  document.getElementById("cy-eyebrow").textContent=noz.name+" · Speed "+state.cal.speed;
+  wireFieldInputs();
+  renderReadoutDynamic();
+
+  // save
+  var saveBtn=document.getElementById("cy-save");
+  saveBtn.innerHTML=ic("save")+"Save to "+esc(noz.name)+" · Speed "+state.cal.speed;
+  saveBtn.onclick=doSave;
+
+  if(seed) toast("Loaded for edit");
+}
+function wireFieldInputs(){
+  Array.prototype.forEach.call(document.querySelectorAll("#cy-fields-host input, #cy-fields-host select"),function(el){
+    el.addEventListener("input",function(){renderReadoutDynamic();updateEyebrow();});
+  });
+}
+function updateEyebrow(){
+  var noz=getNozzle(state.cal.nozzleId);var e=document.getElementById("cy-eyebrow");
+  if(e&&noz) e.textContent=noz.name+" · Speed "+state.cal.speed;
+}
+function doSave(){
+  var noz=getNozzle(state.cal.nozzleId);
+  var inp=readInputs(state.cal.method);
+  var res=computeFromInputs(state.cal.method,inp);
+  if(!res||!isFinite(res.gpk)||res.gpk<=0){toast("Enter values to compute a rate first");return;}
+  var chart=noz&&noz.chart?noz.chart[state.cal.speed]:null;
+  var estPsi=NaN;
+  if(noz&&!noz.builtin&&isFinite(res.gpm)) estPsi=estPsiFromFlow(res.gpm,num(noz.ratedGpm),num(noz.ratedPsi));
+  var notesEl=document.getElementById("cy-notes");
+  var rec={nozzleId:state.cal.nozzleId,nozzleName:noz.name,speed:state.cal.speed,method:state.cal.method,
+    gpk:res.gpk,timePer1000Sec:res.timePer1000Sec,gpm:res.gpm,
+    chartGpm:chart?chart.gpm:null,chartPsi:chart?chart.psi:null,estPsi:isFinite(estPsi)?estPsi:null,
+    inputs:inp,notes:notesEl?notesEl.value:"",date:nowET(),ts:Date.now()};
+  state.calibrations[state.cal.nozzleId+"|"+state.cal.speed]=rec;
+  saveCals();
+  renderDialHost();updateExistingChip();
+  toast("Saved "+noz.name+" · Speed "+state.cal.speed);
+}
+function toast(msg){
+  var host=document.getElementById("cy-toast-host");
+  if(!host) return;
+  host.innerHTML='<div class="cy-toast">'+esc(msg)+'</div>';
+  setTimeout(function(){if(host) host.innerHTML="";},2200);
+}
+
+/* ============================================================ SAVED */
+function renderSaved(m){
+  var nozzles=allNozzles();
+  var count=Object.keys(state.calibrations).length;
+  var head='<div class="cy-saved-head"><div><h2 class="cy-h2 cy-h2-bare">Calibration plate</h2>'+
+    '<p class="cy-note">'+count+' of '+(nozzles.length*5)+' cells recorded. Tap a cell for detail.</p></div>'+
+    '<div class="cy-saved-actions"><button class="cy-btn-ghost" id="cy-copylog"'+(count===0?" disabled":"")+'>'+ic("copy")+'Copy log</button>'+
+    '<button class="cy-btn-ghost" id="cy-backup">'+ic("db")+'Backup</button></div></div>';
+
+  if(count===0){
+    m.innerHTML=head+'<div class="cy-empty">'+ic("gauge")+'<p>No calibrations yet. Head to <b>Calibrate</b>, pick a nozzle and dial position, and save your first reading.</p></div>';
+    document.getElementById("cy-backup").onclick=openBackup;
+    return;
+  }
+  var rows=nozzles.map(function(noz){
+    var cells=SPEEDS.map(function(s){
+      var rec=state.calibrations[noz.id+"|"+s];
+      if(!rec) return '<td><span class="cy-cell-empty">—</span></td>';
+      var band=bandFor(rec.gpk);
+      return '<td><button class="cy-cell v-'+band.v+'" data-key="'+noz.id+"|"+s+'">'+
+        '<span class="cy-cell-gpk mono">'+rec.gpk.toFixed(2)+'</span>'+
+        '<span class="cy-cell-sub mono">'+fmtTime(rec.timePer1000Sec)+'</span></button></td>';
+    }).join("");
+    return '<tr><th class="cy-matrix-row">'+esc(noz.name)+(!noz.builtin?'<span class="cy-tag">custom</span>':"")+'</th>'+cells+'</tr>';
+  }).join("");
+  m.innerHTML=head+'<div class="cy-matrix-wrap"><table class="cy-matrix"><thead><tr><th class="cy-matrix-corner">Nozzle</th>'+
+    SPEEDS.map(function(s){return '<th>Speed '+s+'</th>';}).join("")+'</tr></thead><tbody>'+rows+'</tbody></table></div>';
+
+  document.getElementById("cy-copylog").onclick=function(){copyLog();};
+  document.getElementById("cy-backup").onclick=openBackup;
+  Array.prototype.forEach.call(document.querySelectorAll(".cy-cell"),function(btn){
+    btn.onclick=function(){openDetail(btn.getAttribute("data-key"));};
+  });
+}
+function openDetail(key){
+  var r=state.calibrations[key];if(!r) return;
+  var psi=r.chartPsi!=null?(r.chartPsi+" PSI"):(r.estPsi!=null?(Math.round(r.estPsi)+" PSI est"):"—");
+  var covers=r.gpk>0?(Math.round((TANK_GAL/r.gpk)*1000).toLocaleString()+" ft²"):"—";
+  function d(k,v,big){return '<div class="cy-detail'+(big?" is-big":"")+'"><span class="cy-detail-k">'+esc(k)+'</span><span class="cy-detail-v mono">'+esc(v)+'</span></div>';}
+  var body='<div class="cy-detail-grid">'+
+    d("gal / 1,000 ft²",r.gpk.toFixed(2),true)+d("Time / 1,000 ft²",fmtTime(r.timePer1000Sec),true)+
+    d("Flow rate",isFinite(r.gpm)?(r.gpm.toFixed(2)+" GPM"):"—")+d("Pressure",psi)+
+    d("Chart GPM",r.chartGpm!=null?r.chartGpm.toFixed(2):"—")+d("Method",methodName(r.method))+
+    d("Full 4-gal tank covers",covers)+d("Calibrated",r.date)+'</div>'+
+    (r.notes?'<p class="cy-detail-notes">'+esc(r.notes)+'</p>':"");
+  var actions='<div class="cy-modal-actions"><button class="cy-btn-ghost" id="cy-edit">'+ic("pencil")+'Edit / recalibrate</button>'+
+    '<button class="cy-btn-danger" id="cy-del">'+ic("trash")+'Delete</button></div>';
+  modal('<span class="cy-eyebrow">'+esc(r.nozzleName)+'</span><h3 class="cy-modal-title">Speed '+r.speed+'</h3>',body+actions);
+  document.getElementById("cy-edit").onclick=function(){
+    state.cal.nozzleId=r.nozzleId;state.cal.speed=r.speed;state.cal.method=r.method;state.cal.notes=r.notes||"";
+    state.editSeedInputs={method:r.method,inputs:r.inputs};
+    closeModal();state.tab="calibrate";render();
+  };
+  document.getElementById("cy-del").onclick=function(){
+    delete state.calibrations[key];saveCals();closeModal();render();
+  };
+}
+
+/* ============================================================ REFERENCE */
+function renderReference(m){
+  var head='<tr><th>Nozzle</th>'+SPEEDS.map(function(s){return '<th colspan="2">Speed '+s+'</th>';}).join("")+'</tr>'+
+    '<tr class="cy-ref-sub"><th></th>'+SPEEDS.map(function(){return '<th>GPM</th><th>PSI</th>';}).join("")+'</tr>';
+  var body=STOCK_NOZZLES.map(function(n){
+    return '<tr><th class="cy-matrix-row">'+esc(n.name)+'</th>'+SPEEDS.map(function(s){
+      return '<td class="mono">'+n.chart[s].gpm.toFixed(2)+'</td><td class="mono cy-ink-soft">'+n.chart[s].psi+'</td>';
+    }).join("")+'</tr>';
+  }).join("");
+  m.innerHTML='<div class="cy-card"><h2 class="cy-h2 cy-h2-bare">Manual flow &amp; pressure chart</h2>'+
+    '<p class="cy-note">FZVAAJ-3 operation guide, page 16. Published values — your own calibration overrides these for mixing.</p>'+
+    '<div class="cy-matrix-wrap"><table class="cy-ref"><thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>'+
+    '<p class="cy-fineprint">Flow scales with the square root of pressure (Q₂ = Q₁ × √(P₂/P₁)). For a custom TeeJet tip, the last two digits are GPM at 40 PSI (e.g. 04 = 0.40), and the app uses that to back out effective PSI from your measured flow.</p></div>';
+}
+
+/* ============================================================ MIX */
+function savedList(){
+  var out=[];var nz=allNozzles();
+  nz.forEach(function(n){SPEEDS.forEach(function(s){
+    var r=state.calibrations[n.id+"|"+s];
+    if(r) out.push({key:n.id+"|"+s,label:n.name+" · Speed "+s,gpk:r.gpk});
+  });});
+  return out;
+}
+function renderMix(m){
+  var saved=savedList();
+  if(saved.length===0){
+    m.innerHTML='<div class="cy-empty">'+ic("flask")+'<p>No saved calibrations to mix against yet. Calibrate a nozzle first, then this calculator turns any label rate into exact tank measurements.</p></div>';
+    return;
+  }
+  if(!state.mix.sel||!saved.some(function(s){return s.key===state.mix.sel;})) state.mix.sel=saved[0].key;
+  var opts=saved.map(function(s){return '<option value="'+s.key+'"'+(s.key===state.mix.sel?" selected":"")+'>'+esc(s.label)+' — '+s.gpk.toFixed(2)+' gal/1k</option>';}).join("");
+  m.innerHTML='<div class="cy-grid"><section class="cy-card">'+
+    '<h2 class="cy-h2 first">Job</h2>'+
+    field("Calibration to use",null,null,'<select class="cy-select" id="mx-sel">'+opts+'</select>')+
+    field("Area to treat","ft²",null,'<input class="cy-input mono" id="mx-area" type="text" inputmode="decimal" value="'+esc(state.mix.areaSqFt)+'">')+
+    '<h2 class="cy-h2">Label rate</h2>'+
+    field("Product rate",null,null,'<div class="cy-inline"><input class="cy-input mono" id="mx-rate" type="text" inputmode="decimal" value="'+esc(state.mix.rate)+'">'+
+      '<select class="cy-select cy-select-sm" id="mx-unit"><option value="oz"'+(state.mix.unit==="oz"?" selected":"")+'>oz</option><option value="mL"'+(state.mix.unit==="mL"?" selected":"")+'>mL</option><option value="g"'+(state.mix.unit==="g"?" selected":"")+'>g</option></select></div>')+
+    field("Per",null,null,'<select class="cy-select" id="mx-basis"><option value="per1000"'+(state.mix.basis==="per1000"?" selected":"")+'>1,000 ft²</option><option value="perAcre"'+(state.mix.basis==="perAcre"?" selected":"")+'>acre</option></select>')+
+    '</section><section class="cy-card cy-readout"><span class="cy-eyebrow">Mix sheet</span><div id="mx-out"></div></section></div>';
+
+  ["mx-sel","mx-area","mx-rate","mx-unit","mx-basis"].forEach(function(id){
+    var el=document.getElementById(id);
+    var ev=(el.tagName==="SELECT")?"change":"input";
+    el.addEventListener(ev,function(){
+      state.mix.sel=document.getElementById("mx-sel").value;
+      state.mix.areaSqFt=document.getElementById("mx-area").value;
+      state.mix.rate=document.getElementById("mx-rate").value;
+      state.mix.unit=document.getElementById("mx-unit").value;
+      state.mix.basis=document.getElementById("mx-basis").value;
+      renderMixOut();
+    });
+  });
+  renderMixOut();
+}
+function renderMixOut(){
+  var host=document.getElementById("mx-out");if(!host) return;
+  var saved=savedList();
+  var gpk=(saved.find(function(s){return s.key===state.mix.sel;})||{}).gpk;
+  var a=num(state.mix.areaSqFt),rt=num(state.mix.rate),unit=state.mix.unit;
+  if(!(isFinite(a)&&a>0&&isFinite(rt)&&rt>0&&isFinite(gpk)&&gpk>0)){
+    host.innerHTML='<p class="cy-note cy-pad">Enter an area and a label rate to generate the mix sheet.</p>';return;
+  }
+  var ratePer1000=state.mix.basis==="perAcre"?rt/PER_ACRE_TO_PER_1000:rt;
+  var totalProduct=ratePer1000*(a/1000);
+  var totalVolGal=gpk*(a/1000);
+  var productPerTank=ratePer1000*(TANK_GAL/gpk);
+  var productPerGal=ratePer1000/gpk;
+  var tanks=totalVolGal/TANK_GAL;
+  host.innerHTML=
+    '<div class="cy-mix-hero"><span class="cy-mix-hero-val mono">'+r2(productPerGal)+'</span><span class="cy-mix-hero-unit">'+esc(unit)+' product / gal water</span></div>'+
+    '<div class="cy-readout-rows">'+
+      readRow("flask","Total product for job",r2(totalProduct)+" "+esc(unit))+
+      readRow("droplet","Total spray solution",r2(totalVolGal)+" gal")+
+      readRow("save","Product per full 4-gal tank",r2(productPerTank)+" "+esc(unit))+
+      readRow("gauge","Tankfuls needed",tanks<1?(r2(tanks)+" (part tank)"):String(r1(tanks)))+
+    '</div>'+
+    '<div class="cy-caution">'+ic("alert")+'Always confirm the rate and re-entry interval on the product label before mixing.</div>';
+}
+
+/* ============================================================ MODALS */
+function modal(headHTML,bodyHTML){
+  closeModal();
+  var bg=document.createElement("div");bg.className="cy-modal-bg";bg.id="cy-modal-bg";
+  bg.innerHTML='<div class="cy-modal" id="cy-modal-inner"><div class="cy-modal-head"><div>'+headHTML+
+    '</div><button class="cy-icon-btn" id="cy-modal-close">'+ic("x")+'</button></div>'+bodyHTML+'</div>';
+  bg.onclick=function(e){if(e.target===bg) closeModal();};
+  document.body.appendChild(bg);
+  document.getElementById("cy-modal-close").onclick=closeModal;
+}
+function closeModal(){var x=document.getElementById("cy-modal-bg");if(x) x.remove();}
+
+function openAddNozzle(){
+  var body='<div class="cy-fields">'+
+    field("Name",null,null,'<input class="cy-input" id="an-name" placeholder="e.g. TeeJet TP8004 flat fan">',true)+
+    field("Description",null,null,'<input class="cy-input" id="an-desc" placeholder="pattern, angle, intended use">',true)+
+    field("Notes / info",null,null,'<textarea class="cy-input cy-textarea" id="an-info" rows="2" placeholder="droplet class, fit, where bought"></textarea>',true)+
+    '<div class="cy-subhead">Rated point — lets the app extrapolate PSI from measured flow</div>'+
+    '<div class="cy-inline-fields">'+
+      field("Rated flow","GPM","TeeJet: last 2 digits ÷ 100",'<input class="cy-input mono" id="an-gpm" type="text" inputmode="decimal" placeholder="0.40">')+
+      field("at pressure","PSI","ISO tips: 40",'<input class="cy-input mono" id="an-psi" type="text" inputmode="decimal" value="40">')+
+    '</div>'+
+    '<p class="cy-fineprint" style="grid-column:1/-1">No gauge needed — measured flow at each dial position gives PSI = ratedPSI × (measured ÷ rated GPM)². Leave blank if you don\'t have specs; you can still log gal/1k and time.</p>'+
+    '</div><div class="cy-modal-actions"><button class="cy-btn-ghost" id="an-cancel">Cancel</button>'+
+    '<button class="cy-btn-primary" id="an-add" style="width:auto">'+ic("plus")+'Add nozzle</button></div>';
+  modal('<h3 class="cy-modal-title">Add nozzle</h3>',body);
+  document.getElementById("an-cancel").onclick=closeModal;
+  document.getElementById("an-add").onclick=function(){
+    var name=document.getElementById("an-name").value.trim();
+    if(!name){document.getElementById("an-name").focus();return;}
+    var id="cust-"+Date.now().toString(36);
+    state.customNozzles.push({id:id,name:name,
+      description:document.getElementById("an-desc").value.trim(),
+      info:document.getElementById("an-info").value.trim(),
+      ratedGpm:document.getElementById("an-gpm").value.trim(),
+      ratedPsi:document.getElementById("an-psi").value.trim()||"40",
+      builtin:false,chart:null});
+    saveNozzles();
+    state.cal.nozzleId=id;
+    closeModal();
+    state.tab="calibrate";render();
+  };
+}
+
+function logText(){
+  var lines=["CYCLONE 3 CALIBRATION LOG — exported "+nowET(),"Tank: 4 gal (FZVAAJ-3)",""];
+  allNozzles().forEach(function(noz){
+    var rs=SPEEDS.map(function(s){return state.calibrations[noz.id+"|"+s];}).filter(Boolean);
+    if(!rs.length) return;
+    lines.push(noz.name);
+    rs.forEach(function(r){
+      lines.push("  Speed "+r.speed+" | "+r.gpk.toFixed(2)+" gal/1k | time/1k "+fmtTime(r.timePer1000Sec)+
+        " | "+(isFinite(r.gpm)?r.gpm.toFixed(2)+" GPM":"—")+(r.chartGpm!=null?(" (chart "+r.chartGpm.toFixed(2)+")"):"")+
+        " | "+(r.chartPsi!=null?(r.chartPsi+" PSI"):(r.estPsi!=null?(Math.round(r.estPsi)+" PSI est"):"—"))+
+        " | "+r.method+" | "+r.date+(r.notes?(" | "+r.notes):""));
+    });
+    lines.push("");
+  });
+  if(state.customNozzles.length){
+    lines.push("Custom nozzles:");
+    state.customNozzles.forEach(function(n){
+      lines.push("  "+n.name+" — "+(n.description||"")+(isFinite(num(n.ratedGpm))?(" (rated "+n.ratedGpm+" GPM @ "+(n.ratedPsi||40)+" PSI)"):"")+(n.info?(" — "+n.info):""));
+    });
+  }
+  return lines.join("\n");
+}
+function tryCopy(text){
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).catch(function(){});} }catch(e){}
+}
+function copyLog(){
+  var t=logText();tryCopy(t);
+  modal('<h3 class="cy-modal-title">Calibration log</h3>',
+    '<p class="cy-note">Copied to clipboard if your browser allows it — otherwise long-press to select and copy.</p>'+
+    '<textarea class="cy-backup-ta" rows="12" readonly>'+esc(t)+'</textarea>');
+  var ta=document.querySelector(".cy-backup-ta");if(ta){ta.focus();ta.select();}
+}
+function openBackup(){
+  var data=JSON.stringify({app:"cyclone3-cal",version:1,exportedAt:nowET(),customNozzles:state.customNozzles,calibrations:state.calibrations},null,2);
+  tryCopy(data);
+  var body='<p class="cy-note">Your full log as JSON. Copy it somewhere safe (Notes, Files, email). To move to a new device or recover, paste a backup below and tap Restore.</p>'+
+    '<div class="cy-subhead" style="margin-top:4px">Export</div>'+
+    '<textarea class="cy-backup-ta" id="bk-export" rows="7" readonly>'+esc(data)+'</textarea>'+
+    '<div class="cy-subhead" style="margin-top:12px">Restore — paste a backup, then tap Restore</div>'+
+    '<textarea class="cy-backup-ta" id="bk-import" rows="5" placeholder="paste backup JSON here"></textarea>'+
+    '<div class="cy-modal-actions"><button class="cy-btn-ghost" id="bk-close">Close</button>'+
+    '<button class="cy-btn-primary" id="bk-restore" style="width:auto">'+ic("db")+'Restore</button></div>';
+  modal('<h3 class="cy-modal-title">Backup &amp; restore</h3>',body);
+  var ex=document.getElementById("bk-export");if(ex){ex.focus();ex.select();}
+  document.getElementById("bk-close").onclick=closeModal;
+  document.getElementById("bk-restore").onclick=function(){
+    var raw=document.getElementById("bk-import").value.trim();
+    if(!raw) return;
+    try{
+      var obj=JSON.parse(raw);
+      if(obj.calibrations) state.calibrations=obj.calibrations;
+      if(obj.customNozzles) state.customNozzles=obj.customNozzles;
+      saveCals();saveNozzles();closeModal();render();
+    }catch(e){
+      var imp=document.getElementById("bk-import");
+      imp.style.borderColor="#b3372c";imp.value="";imp.placeholder="That wasn't valid backup JSON — paste the full exported text.";
+    }
+  };
+}
+
+/* ---------- go ---------- */
+load();
+render();
+})();
+</script>
+</body>
+</html>
