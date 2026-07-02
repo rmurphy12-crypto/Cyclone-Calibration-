@@ -7,10 +7,16 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Cyclone 3 Cal">
 <meta name="theme-color" content="#1b241f">
+<meta name="description" content="Calibration log and mix calculator for the FlowZone Cyclone 3 (FZVAAJ-3) backpack sprayer. Works offline; data stays on your device.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <title>Cyclone 3 — Sprayer Calibration</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap');
 :root{
+  --font-sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-display:var(--font-sans);
+  --font-mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
   --paper:#eaeee6; --surface:#ffffff; --ink:#1b241f; --ink-soft:#67726a;
   --line:#d3dacc; --green:#3f7a2a; --green-bright:#5fa336;
   --amber:#b1701a; --blue:#2c6e8f;
@@ -18,22 +24,22 @@
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
-body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--paper);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
-.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+body{font-family:var(--font-sans);color:var(--ink);background:var(--paper);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
 .cy-ink-soft{color:var(--ink-soft);}
 
 .cy-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 22px;padding-top:calc(18px + env(safe-area-inset-top));border-bottom:2px solid var(--ink);background:var(--surface);}
 .cy-brand{display:flex;flex-direction:column;gap:2px;}
-.cy-mark{font-family:'Archivo';font-weight:800;font-size:23px;letter-spacing:-.5px;line-height:1;}
+.cy-mark{font-family:var(--font-display);font-weight:800;font-size:23px;letter-spacing:-.5px;line-height:1;}
 .cy-mark b{color:var(--green-bright);}
 .cy-sub{font-size:12px;color:var(--ink-soft);letter-spacing:.04em;text-transform:uppercase;font-weight:500;}
 .cy-spec{display:flex;gap:8px;}
-.cy-chip{font-family:'JetBrains Mono';font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 9px;border:1.5px solid var(--line);border-radius:5px;color:var(--ink-soft);}
+.cy-chip{font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.05em;padding:5px 9px;border:1.5px solid var(--line);border-radius:5px;color:var(--ink-soft);}
 .cy-chip-accent{background:var(--ink);color:#fff;border-color:var(--ink);}
 .cy-chip-mini{font-size:10px;padding:3px 7px;background:var(--amber-tint);color:var(--amber);border:none;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
 
 .cy-tabs{display:flex;gap:2px;padding:0 14px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;overflow-x:auto;}
-.cy-tab{display:flex;align-items:center;gap:7px;padding:13px 15px;background:none;border:none;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:14px;color:var(--ink-soft);border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;}
+.cy-tab{display:flex;align-items:center;gap:7px;padding:13px 15px;background:none;border:none;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:14px;color:var(--ink-soft);border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap;transition:color .15s;}
 .cy-tab:hover{color:var(--ink);}
 .cy-tab.is-active{color:var(--ink);border-bottom-color:var(--green-bright);}
 .cy-tab svg{width:16px;height:16px;}
@@ -43,14 +49,14 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 @media(max-width:840px){.cy-grid{grid-template-columns:1fr;}}
 .cy-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;}
 
-.cy-h2{font-family:'Archivo';font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin:22px 0 11px;display:flex;align-items:center;gap:8px;}
+.cy-h2{font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin:22px 0 11px;display:flex;align-items:center;gap:8px;}
 .cy-h2.first{margin-top:0;}
 .cy-h2-bare{color:var(--ink);font-size:17px;letter-spacing:-.2px;text-transform:none;}
 .cy-note{font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 6px;}
 .cy-subhead{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin:6px 0 2px;grid-column:1/-1;}
 
 .cy-nozzle-row{display:flex;gap:9px;}
-.cy-select{flex:1;font-family:'Inter';font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);cursor:pointer;}
+.cy-select{flex:1;font-family:var(--font-sans);font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);cursor:pointer;}
 .cy-select-sm{flex:0 0 78px;}
 .cy-select:focus,.cy-input:focus{outline:none;border-color:var(--green-bright);box-shadow:0 0 0 3px var(--green-tint);}
 
@@ -58,7 +64,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-dial-pos{position:relative;flex:1;aspect-ratio:1;max-width:62px;border:2px solid var(--line);border-radius:50%;background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .cy-dial-pos:hover{border-color:var(--ink-soft);}
 .cy-dial-pos.is-active{border-color:var(--ink);background:var(--ink);}
-.cy-dial-num{font-family:'Archivo';font-weight:800;font-size:19px;color:var(--ink-soft);}
+.cy-dial-num{font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--ink-soft);}
 .cy-dial-pos.is-active .cy-dial-num{color:#fff;}
 .cy-dial-dot{position:absolute;bottom:7px;width:5px;height:5px;border-radius:50%;background:var(--green-bright);}
 .cy-dial-pos.is-active .cy-dial-dot{background:#fff;}
@@ -69,7 +75,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-method{text-align:left;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);cursor:pointer;transition:all .14s;}
 .cy-method:hover{border-color:var(--ink-soft);}
 .cy-method.is-active{border-color:var(--green-bright);background:var(--green-tint);}
-.cy-method-title{display:block;font-family:'Archivo';font-weight:700;font-size:14px;}
+.cy-method-title{display:block;font-family:var(--font-display);font-weight:700;font-size:14px;}
 .cy-method-desc{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;line-height:1.4;}
 
 .cy-fields{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
@@ -77,10 +83,10 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-field{display:flex;flex-direction:column;gap:5px;}
 .cy-field.full{grid-column:1/-1;}
 .cy-field-label{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
-.cy-unit{font-family:'JetBrains Mono';font-style:normal;font-size:11px;color:var(--green);font-weight:500;}
+.cy-unit{font-family:var(--font-mono);font-style:normal;font-size:11px;color:var(--green);font-weight:500;}
 .cy-hint{font-size:11px;color:var(--ink-soft);font-weight:400;}
-.cy-input{width:100%;font-family:'Inter';font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);}
-.cy-input.mono{font-family:'JetBrains Mono';}
+.cy-input{width:100%;font-family:var(--font-sans);font-size:16px;padding:9px 11px;border:1.5px solid var(--line);border-radius:7px;background:var(--surface);color:var(--ink);}
+.cy-input.mono{font-family:var(--font-mono);}
 .cy-textarea{resize:vertical;line-height:1.4;font-size:15px;}
 .cy-inline{display:flex;gap:8px;}
 .cy-inline .cy-input{flex:1;}
@@ -88,7 +94,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-readout{position:sticky;top:60px;}
 @media(max-width:840px){.cy-readout{position:static;}}
 .cy-readout-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
-.cy-eyebrow{font-family:'JetBrains Mono';font-size:11px;font-weight:500;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase;}
+.cy-eyebrow{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.03em;color:var(--ink-soft);text-transform:uppercase;}
 .cy-bignum{display:flex;flex-direction:column;align-items:flex-start;padding:18px 0 4px;border-top:1px solid var(--line);}
 .cy-bignum-val{font-size:52px;font-weight:700;line-height:1;letter-spacing:-1px;}
 .cy-bignum-unit{font-size:13px;color:var(--ink-soft);margin-top:6px;font-weight:500;}
@@ -108,25 +114,28 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-perg{font-size:12px;color:var(--ink-soft);margin:14px 0;line-height:1.5;}
 .cy-perg b{color:var(--ink);}
 
-.cy-btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:'Archivo';font-weight:700;font-size:14px;transition:background .15s;}
+.cy-btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:var(--font-display);font-weight:700;font-size:14px;transition:background .15s;}
 .cy-btn-primary:hover{background:#0e1611;} .cy-btn-primary:disabled{opacity:.4;cursor:not-allowed;}
-.cy-btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface);border:1.5px solid var(--line);border-radius:7px;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:13px;color:var(--ink);transition:all .14s;}
+.cy-btn-ghost{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:var(--surface);border:1.5px solid var(--line);border-radius:7px;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;color:var(--ink);transition:all .14s;}
 .cy-btn-ghost:hover{border-color:var(--ink-soft);} .cy-btn-ghost:disabled{opacity:.4;cursor:not-allowed;}
-.cy-btn-danger{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:#fff;border:1.5px solid #e7c4c0;border-radius:7px;cursor:pointer;font-family:'Archivo';font-weight:600;font-size:13px;color:#b3372c;}
+.cy-btn-danger{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;background:#fff;border:1.5px solid #e7c4c0;border-radius:7px;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;color:#b3372c;}
 .cy-btn-danger:hover{background:#fbf0ef;}
 .cy-icon-btn{background:none;border:none;cursor:pointer;color:var(--ink-soft);padding:4px;display:flex;border-radius:5px;}
 .cy-icon-btn:hover{background:var(--ink-tint);color:var(--ink);}
 .cy-toast{margin-top:11px;text-align:center;font-size:13px;font-weight:600;color:var(--green);background:var(--green-tint);padding:9px;border-radius:7px;}
+.cy-toast.is-error{color:#b3372c;background:#fbf0ef;}
+#cy-toast-float{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;width:min(92vw,420px);pointer-events:none;}
+#cy-toast-float .cy-toast{box-shadow:0 6px 18px rgba(15,20,16,.18);border:1px solid var(--line);}
 
 .cy-saved-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px;flex-wrap:wrap;}
 .cy-saved-actions{display:flex;gap:8px;}
 .cy-matrix-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);-webkit-overflow-scrolling:touch;}
 .cy-matrix,.cy-ref{border-collapse:collapse;width:100%;min-width:560px;}
 .cy-matrix th,.cy-matrix td,.cy-ref th,.cy-ref td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);}
-.cy-matrix thead th{font-family:'Archivo';font-weight:700;font-size:12px;padding:11px 10px;background:var(--ink-tint);text-align:center;color:var(--ink);letter-spacing:.02em;}
+.cy-matrix thead th{font-family:var(--font-display);font-weight:700;font-size:12px;padding:11px 10px;background:var(--ink-tint);text-align:center;color:var(--ink);letter-spacing:.02em;}
 .cy-matrix-corner{text-align:left!important;}
-.cy-matrix-row{font-family:'Inter';font-weight:600;font-size:13px;padding:10px 12px;text-align:left;background:var(--surface);white-space:nowrap;}
-.cy-tag{display:inline-block;margin-left:7px;font-family:'JetBrains Mono';font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-tint);padding:2px 5px;border-radius:3px;}
+.cy-matrix-row{font-family:var(--font-sans);font-weight:600;font-size:13px;padding:10px 12px;text-align:left;background:var(--surface);white-space:nowrap;}
+.cy-tag{display:inline-block;margin-left:7px;font-family:var(--font-mono);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--amber);background:var(--amber-tint);padding:2px 5px;border-radius:3px;}
 .cy-matrix td{padding:0;text-align:center;height:58px;vertical-align:middle;}
 .cy-cell{width:100%;height:58px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:var(--surface);transition:filter .12s;}
 .cy-cell:hover{filter:brightness(.96);}
@@ -135,10 +144,10 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-cell.v-green{background:var(--green-tint);} .cy-cell.v-green .cy-cell-gpk{color:var(--green);}
 .cy-cell.v-blue{background:var(--blue-tint);} .cy-cell.v-blue .cy-cell-gpk{color:var(--blue);}
 .cy-cell.v-amber{background:var(--amber-tint);} .cy-cell.v-amber .cy-cell-gpk{color:var(--amber);}
-.cy-cell-empty{color:var(--line);font-size:18px;font-family:'JetBrains Mono';}
+.cy-cell-empty{color:var(--line);font-size:18px;font-family:var(--font-mono);}
 .cy-matrix tr td:last-child,.cy-matrix tr th:last-child{border-right:none;}
 
-.cy-ref thead th{font-family:'Archivo';font-weight:700;font-size:12px;padding:9px 8px;background:var(--ink-tint);text-align:center;}
+.cy-ref thead th{font-family:var(--font-display);font-weight:700;font-size:12px;padding:9px 8px;background:var(--ink-tint);text-align:center;}
 .cy-ref-sub th{font-size:10px;color:var(--ink-soft);font-weight:600;padding:5px 8px;background:var(--surface);}
 .cy-ref td{padding:9px 8px;text-align:center;font-size:13px;}
 .cy-fineprint{font-size:12px;color:var(--ink-soft);line-height:1.55;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}
@@ -151,7 +160,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-modal-bg{position:fixed;inset:0;background:rgba(15,20,16,.45);display:flex;align-items:center;justify-content:center;padding:18px;z-index:50;}
 .cy-modal{background:var(--surface);border-radius:12px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;border:1px solid var(--line);}
 .cy-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;}
-.cy-modal-title{font-family:'Archivo';font-weight:800;font-size:20px;margin:2px 0 0;letter-spacing:-.3px;}
+.cy-modal-title{font-family:var(--font-display);font-weight:800;font-size:20px;margin:2px 0 0;letter-spacing:-.3px;}
 .cy-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
 .cy-detail{background:var(--surface);padding:11px 13px;display:flex;flex-direction:column;gap:3px;}
 .cy-detail.is-big{background:var(--ink-tint);}
@@ -167,26 +176,29 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .cy-caution{display:flex;gap:8px;align-items:flex-start;margin-top:14px;padding:10px 12px;background:var(--amber-tint);color:var(--amber);border-radius:7px;font-size:12px;line-height:1.45;font-weight:500;}
 .cy-caution svg{flex:0 0 auto;margin-top:1px;width:15px;height:15px;}
 .cy-pad{padding:14px 0;}
-.cy-backup-ta{width:100%;font-family:'JetBrains Mono';font-size:12px;line-height:1.4;padding:10px;border:1.5px solid var(--line);border-radius:7px;resize:vertical;background:var(--ink-tint);color:var(--ink);}
+.cy-backup-ta{width:100%;font-family:var(--font-mono);font-size:12px;line-height:1.4;padding:10px;border:1.5px solid var(--line);border-radius:7px;resize:vertical;background:var(--ink-tint);color:var(--ink);}
 
 @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<script src="calc.js"></script>
 <script>
 /* ============================================================
-   FlowZone Cyclone 3 — Sprayer Calibration (standalone, offline)
-   Tank fixed at 4 gal (FZVAAJ-3). Timestamps in ET.
+   FlowZone Cyclone 3 — Sprayer Calibration (offline-first)
+   Tank fixed at 4 gal (FZVAAJ-3). Timestamps in local time.
    Persists via localStorage; Backup/Restore guards against loss.
+   Math lives in calc.js (tests: node tests/calc.test.js).
    ============================================================ */
 (function(){
 "use strict";
 
-var TANK_GAL=4;
-var SPEEDS=[1,2,3,4,5];
-var SQFT_PER_ACRE=43560;
-var PER_ACRE_TO_PER_1000=SQFT_PER_ACRE/1000; // 43.56
+var C=window.CycloneCalc;
+var TANK_GAL=C.TANK_GAL, SPEEDS=C.SPEEDS, PER_ACRE_TO_PER_1000=C.PER_ACRE_TO_PER_1000;
+var num=C.num, r2=C.r2, r1=C.r1, fmtTime=C.fmtTime, bandFor=C.bandFor;
+var estPsiFromFlow=C.estPsiFromFlow, sanitizeBackup=C.sanitizeBackup;
+var computeArea=C.computeArea, computeFlowTime=C.computeFlowTime, compute128=C.compute128;
 
 var STOCK_NOZZLES=[
   {id:"cone-mist",name:"Adjustable Cone — Misting",builtin:true,
@@ -224,58 +236,11 @@ function ic(name){
 }
 
 /* ---------- helpers ---------- */
-function num(v){var n=parseFloat(v);return isFinite(n)?n:NaN;}
-function r2(n){return Math.round(n*100)/100;}
-function r1(n){return Math.round(n*10)/10;}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function fmtTime(sec){
-  if(!isFinite(sec)||sec<=0) return "—";
-  var m=Math.floor(sec/60), s=Math.round(sec%60);
-  return m>0?(m+":"+String(s).padStart(2,"0")):(s+"s");
-}
-function nowET(){
-  return new Date().toLocaleString("en-US",{timeZone:"America/New_York",year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})+" ET";
-}
-function bandFor(gpk){
-  if(!isFinite(gpk)||gpk<=0) return {key:"none",label:"—",v:"ink-soft"};
-  if(gpk<0.75) return {key:"light",label:"light coverage",v:"amber"};
-  if(gpk<1.5) return {key:"std",label:"standard \u22481 gal/1k",v:"green"};
-  if(gpk<=4) return {key:"heavy",label:"heavy / fungicide range",v:"blue"};
-  return {key:"vheavy",label:"very heavy",v:"amber"};
-}
-function estPsiFromFlow(gpm,ratedGpm,ratedPsi){
-  if(!isFinite(gpm)||!isFinite(ratedGpm)||!isFinite(ratedPsi)||ratedGpm<=0) return NaN;
-  return ratedPsi*Math.pow(gpm/ratedGpm,2);
+function nowLocal(){
+  return new Date().toLocaleString(undefined,{year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"});
 }
 function methodName(m){return m==="area"?"Area & Volume":m==="flowtime"?"Flow × Time":"1/128 Acre";}
-
-/* ---------- calibration math ---------- */
-function computeArea(o){
-  var a=num(o.areaSqFt),v=num(o.volume),t=num(o.timeSec);
-  if(!isFinite(a)||a<=0||!isFinite(v)||v<=0) return null;
-  var volGal=o.volumeUnit==="oz"?v/128:v;
-  var gpk=(volGal/a)*1000;
-  var timePer1000=(isFinite(t)&&t>0)?(t/a)*1000:NaN;
-  var gpm=(isFinite(t)&&t>0)?volGal/(t/60):NaN;
-  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm};
-}
-function computeFlowTime(o){
-  var bo=num(o.bucketOz),bs=num(o.bucketSec),ca=num(o.coverArea),cs=num(o.coverSec);
-  if(!(isFinite(bo)&&isFinite(bs)&&isFinite(ca)&&isFinite(cs))||bs<=0||ca<=0||cs<=0) return null;
-  var gpm=(bo/128)/(bs/60);
-  var timePer1000=(cs/ca)*1000;
-  var gpk=gpm*(timePer1000/60);
-  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm};
-}
-function compute128(o){
-  var p=num(o.plotSqFt),t=num(o.plotSec),c=num(o.collectedOz);
-  if(!(isFinite(p)&&isFinite(t)&&isFinite(c))||p<=0||t<=0) return null;
-  var gpa=c*(340.3/p);
-  var gpk=gpa/PER_ACRE_TO_PER_1000;
-  var timePer1000=(t/p)*1000;
-  var gpm=(c/128)/(t/60);
-  return {gpk:gpk,timePer1000Sec:timePer1000,gpm:gpm,gpa:gpa};
-}
 
 /* ---------- state + persistence ---------- */
 var state={
@@ -283,17 +248,24 @@ var state={
   customNozzles:[],
   calibrations:{},
   cal:{nozzleId:STOCK_NOZZLES[0].id,speed:3,method:"flowtime",notes:""},
-  editSeedInputs:null,
+  draft:{},          // in-progress measurement inputs, keyed by method — survives re-renders
+  editLoaded:false,  // one-shot flag: show "Loaded for edit" toast
   mix:{sel:"",areaSqFt:"",rate:"",basis:"per1000",unit:"oz"}
 };
 function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
-function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function lsSet(k,v){try{localStorage.setItem(k,v);return true;}catch(e){return false;}}
 function load(){
-  try{var n=lsGet(KEY_NOZ);if(n) state.customNozzles=JSON.parse(n)||[];}catch(e){}
-  try{var c=lsGet(KEY_CAL);if(c) state.calibrations=JSON.parse(c)||{};}catch(e){}
+  var raw={};
+  try{var n=lsGet(KEY_NOZ);if(n) raw.customNozzles=JSON.parse(n);}catch(e){}
+  try{var c=lsGet(KEY_CAL);if(c) raw.calibrations=JSON.parse(c);}catch(e){}
+  var clean=sanitizeBackup(raw); // self-heal any corrupt stored data
+  if(clean){
+    state.customNozzles=clean.customNozzles;
+    state.calibrations=clean.calibrations;
+  }
 }
-function saveNozzles(){lsSet(KEY_NOZ,JSON.stringify(state.customNozzles));}
-function saveCals(){lsSet(KEY_CAL,JSON.stringify(state.calibrations));}
+function saveNozzles(){return lsSet(KEY_NOZ,JSON.stringify(state.customNozzles));}
+function saveCals(){return lsSet(KEY_CAL,JSON.stringify(state.calibrations));}
 function allNozzles(){return STOCK_NOZZLES.concat(state.customNozzles);}
 function getNozzle(id){var a=allNozzles();for(var i=0;i<a.length;i++) if(a[i].id===id) return a[i];return null;}
 
@@ -431,9 +403,6 @@ function updateExistingChip(){
   c.style.display=state.calibrations[state.cal.nozzleId+"|"+state.cal.speed]?"inline-block":"none";
 }
 function renderCalibrate(m){
-  // consume edit seed
-  var seed=state.editSeedInputs;
-  state.editSeedInputs=null;
   var noz=getNozzle(state.cal.nozzleId)||STOCK_NOZZLES[0];
 
   var customNote=(noz&&!noz.builtin)
@@ -453,13 +422,14 @@ function renderCalibrate(m){
    '<div class="cy-grid">'+
     '<section class="cy-card">'+
       '<h2 class="cy-h2 first">1 · Nozzle</h2>'+
-      '<div class="cy-nozzle-row"><select class="cy-select" id="cy-nozsel">'+nozOpts+'</select>'+
+      '<div class="cy-nozzle-row"><select class="cy-select" id="cy-nozsel" aria-label="Nozzle">'+nozOpts+'</select>'+
+        (!noz.builtin?'<button class="cy-btn-ghost" id="cy-editnoz" aria-label="Edit nozzle">'+ic("pencil")+'Edit</button>':"")+
         '<button class="cy-btn-ghost" id="cy-addnoz">'+ic("plus")+'Add</button></div>'+customNote+
       '<h2 class="cy-h2">2 · Dial position</h2><div class="cy-dial" id="cy-dial-host"></div>'+
       '<div class="cy-chartref" id="cy-chartref"></div>'+
       '<h2 class="cy-h2">3 · Method</h2><div class="cy-methods" id="cy-methods">'+methodHTML+'</div>'+
       '<h2 class="cy-h2">4 · Measurements</h2><div class="cy-fields" id="cy-fields-host"></div>'+
-      field("Notes","","conditions, pace, overlap, height",'<textarea class="cy-input cy-textarea" id="cy-notes" rows="2" placeholder="e.g. knee-high, steady pace, 50% overlap">'+esc(seed?(state.cal.notes||""):state.cal.notes||"")+'</textarea>',true)+
+      field("Notes","","conditions, pace, overlap, height",'<textarea class="cy-input cy-textarea" id="cy-notes" rows="2" placeholder="e.g. knee-high, steady pace, 50% overlap">'+esc(state.cal.notes||"")+'</textarea>',true)+
     '</section>'+
     '<section class="cy-card cy-readout">'+
       '<div class="cy-readout-head"><span class="cy-eyebrow" id="cy-eyebrow"></span>'+
@@ -470,21 +440,22 @@ function renderCalibrate(m){
     '</section>'+
    '</div>';
 
-  // fields
-  document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,seed&&seed.method===state.cal.method?seed.inputs:null);
+  // fields — seed from the per-method draft so re-renders never lose typed values
+  document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,state.draft[state.cal.method]||null);
 
   // wire nozzle
   document.getElementById("cy-nozsel").onchange=function(e){
     state.cal.nozzleId=e.target.value;
-    // refresh custom note by re-rendering whole view (cheap, preserves nothing critical)
-    renderCalibrate(m);
+    renderCalibrate(m); // drafts + notes live in state, so nothing typed is lost
   };
-  document.getElementById("cy-addnoz").onclick=openAddNozzle;
+  document.getElementById("cy-addnoz").onclick=function(){openNozzleEditor(null);};
+  var editBtn=document.getElementById("cy-editnoz");
+  if(editBtn) editBtn.onclick=function(){openNozzleEditor(getNozzle(state.cal.nozzleId));};
   // methods
   Array.prototype.forEach.call(document.querySelectorAll("#cy-methods .cy-method"),function(btn){
     btn.onclick=function(){state.cal.method=btn.getAttribute("data-method");
       Array.prototype.forEach.call(document.querySelectorAll("#cy-methods .cy-method"),function(b){b.classList.toggle("is-active",b===btn);});
-      document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,null);
+      document.getElementById("cy-fields-host").innerHTML=fieldsHTML(state.cal.method,state.draft[state.cal.method]||null);
       wireFieldInputs();renderReadoutDynamic();};
   });
   // dial + refs
@@ -498,12 +469,17 @@ function renderCalibrate(m){
   saveBtn.innerHTML=ic("save")+"Save to "+esc(noz.name)+" · Speed "+state.cal.speed;
   saveBtn.onclick=doSave;
 
-  if(seed) toast("Loaded for edit");
+  if(state.editLoaded){state.editLoaded=false;toast("Loaded for edit");}
 }
 function wireFieldInputs(){
   Array.prototype.forEach.call(document.querySelectorAll("#cy-fields-host input, #cy-fields-host select"),function(el){
-    el.addEventListener("input",function(){renderReadoutDynamic();updateEyebrow();});
+    el.addEventListener("input",function(){
+      state.draft[state.cal.method]=readInputs(state.cal.method);
+      renderReadoutDynamic();updateEyebrow();
+    });
   });
+  var notes=document.getElementById("cy-notes");
+  if(notes) notes.addEventListener("input",function(){state.cal.notes=notes.value;});
 }
 function updateEyebrow(){
   var noz=getNozzle(state.cal.nozzleId);var e=document.getElementById("cy-eyebrow");
@@ -521,17 +497,21 @@ function doSave(){
   var rec={nozzleId:state.cal.nozzleId,nozzleName:noz.name,speed:state.cal.speed,method:state.cal.method,
     gpk:res.gpk,timePer1000Sec:res.timePer1000Sec,gpm:res.gpm,
     chartGpm:chart?chart.gpm:null,chartPsi:chart?chart.psi:null,estPsi:isFinite(estPsi)?estPsi:null,
-    inputs:inp,notes:notesEl?notesEl.value:"",date:nowET(),ts:Date.now()};
+    inputs:inp,notes:notesEl?notesEl.value:"",date:nowLocal(),ts:Date.now()};
   state.calibrations[state.cal.nozzleId+"|"+state.cal.speed]=rec;
-  saveCals();
+  var ok=saveCals();
   renderDialHost();updateExistingChip();
-  toast("Saved "+noz.name+" · Speed "+state.cal.speed);
+  if(ok) toast("Saved "+noz.name+" · Speed "+state.cal.speed);
+  else toast("Couldn't save — storage is full or blocked. Export a backup, then free space.",true);
 }
-function toast(msg){
+function toast(msg,isError){
   var host=document.getElementById("cy-toast-host");
-  if(!host) return;
-  host.innerHTML='<div class="cy-toast">'+esc(msg)+'</div>';
-  setTimeout(function(){if(host) host.innerHTML="";},2200);
+  if(!host){ // outside the Calibrate tab, float the toast above the page
+    host=document.getElementById("cy-toast-float");
+    if(!host){host=document.createElement("div");host.id="cy-toast-float";document.body.appendChild(host);}
+  }
+  host.innerHTML='<div class="cy-toast'+(isError?" is-error":"")+'" role="status">'+esc(msg)+'</div>';
+  setTimeout(function(){if(host) host.innerHTML="";},isError?4200:2200);
 }
 
 /* ============================================================ SAVED */
@@ -584,7 +564,8 @@ function openDetail(key){
   modal('<span class="cy-eyebrow">'+esc(r.nozzleName)+'</span><h3 class="cy-modal-title">Speed '+r.speed+'</h3>',body+actions);
   document.getElementById("cy-edit").onclick=function(){
     state.cal.nozzleId=r.nozzleId;state.cal.speed=r.speed;state.cal.method=r.method;state.cal.notes=r.notes||"";
-    state.editSeedInputs={method:r.method,inputs:r.inputs};
+    state.draft[r.method]=r.inputs||{};
+    state.editLoaded=true;
     closeModal();state.tab="calibrate";render();
   };
   document.getElementById("cy-del").onclick=function(){
@@ -662,13 +643,23 @@ function renderMixOut(){
   var productPerTank=ratePer1000*(TANK_GAL/gpk);
   var productPerGal=ratePer1000/gpk;
   var tanks=totalVolGal/TANK_GAL;
+  var tanksUp=Math.ceil(tanks);
+  var lastTankGal=totalVolGal-(tanksUp-1)*TANK_GAL;
+  var tankRows="";
+  if(tanks<1){
+    tankRows=readRow("gauge","Tankfuls needed",r2(tanks)+" (part tank)")+
+      readRow("droplet","Fill the tank with",r2(totalVolGal)+" gal + "+r2(totalProduct)+" "+esc(unit));
+  }else{
+    tankRows=readRow("gauge","Tankfuls needed",tanksUp+(tanksUp>tanks?" ("+r1(tanks)+" exact)":""));
+    if(tanksUp>tanks) tankRows+=readRow("droplet","Last tank (partial)",r2(lastTankGal)+" gal + "+r2(productPerGal*lastTankGal)+" "+esc(unit));
+  }
   host.innerHTML=
     '<div class="cy-mix-hero"><span class="cy-mix-hero-val mono">'+r2(productPerGal)+'</span><span class="cy-mix-hero-unit">'+esc(unit)+' product / gal water</span></div>'+
     '<div class="cy-readout-rows">'+
       readRow("flask","Total product for job",r2(totalProduct)+" "+esc(unit))+
       readRow("droplet","Total spray solution",r2(totalVolGal)+" gal")+
       readRow("save","Product per full 4-gal tank",r2(productPerTank)+" "+esc(unit))+
-      readRow("gauge","Tankfuls needed",tanks<1?(r2(tanks)+" (part tank)"):String(r1(tanks)))+
+      tankRows+
     '</div>'+
     '<div class="cy-caution">'+ic("alert")+'Always confirm the rate and re-entry interval on the product label before mixing.</div>';
 }
@@ -677,48 +668,77 @@ function renderMixOut(){
 function modal(headHTML,bodyHTML){
   closeModal();
   var bg=document.createElement("div");bg.className="cy-modal-bg";bg.id="cy-modal-bg";
-  bg.innerHTML='<div class="cy-modal" id="cy-modal-inner"><div class="cy-modal-head"><div>'+headHTML+
-    '</div><button class="cy-icon-btn" id="cy-modal-close">'+ic("x")+'</button></div>'+bodyHTML+'</div>';
+  bg.innerHTML='<div class="cy-modal" id="cy-modal-inner" role="dialog" aria-modal="true"><div class="cy-modal-head"><div>'+headHTML+
+    '</div><button class="cy-icon-btn" id="cy-modal-close" aria-label="Close">'+ic("x")+'</button></div>'+bodyHTML+'</div>';
   bg.onclick=function(e){if(e.target===bg) closeModal();};
   document.body.appendChild(bg);
-  document.getElementById("cy-modal-close").onclick=closeModal;
+  var closeBtn=document.getElementById("cy-modal-close");
+  closeBtn.onclick=closeModal;
+  closeBtn.focus();
+  document.addEventListener("keydown",modalEsc);
 }
-function closeModal(){var x=document.getElementById("cy-modal-bg");if(x) x.remove();}
+function modalEsc(e){if(e.key==="Escape") closeModal();}
+function closeModal(){
+  document.removeEventListener("keydown",modalEsc);
+  var x=document.getElementById("cy-modal-bg");if(x) x.remove();
+}
 
-function openAddNozzle(){
+function openNozzleEditor(existing){
+  if(existing&&existing.builtin) return; // stock nozzles aren't editable
+  function v(x){return esc(existing&&existing[x]!=null?existing[x]:"");}
+  var calKeys=existing?SPEEDS.filter(function(s){return state.calibrations[existing.id+"|"+s];}):[];
   var body='<div class="cy-fields">'+
-    field("Name",null,null,'<input class="cy-input" id="an-name" placeholder="e.g. TeeJet TP8004 flat fan">',true)+
-    field("Description",null,null,'<input class="cy-input" id="an-desc" placeholder="pattern, angle, intended use">',true)+
-    field("Notes / info",null,null,'<textarea class="cy-input cy-textarea" id="an-info" rows="2" placeholder="droplet class, fit, where bought"></textarea>',true)+
+    field("Name",null,null,'<input class="cy-input" id="an-name" placeholder="e.g. TeeJet TP8004 flat fan" value="'+v("name")+'">',true)+
+    field("Description",null,null,'<input class="cy-input" id="an-desc" placeholder="pattern, angle, intended use" value="'+v("description")+'">',true)+
+    field("Notes / info",null,null,'<textarea class="cy-input cy-textarea" id="an-info" rows="2" placeholder="droplet class, fit, where bought">'+v("info")+'</textarea>',true)+
     '<div class="cy-subhead">Rated point — lets the app extrapolate PSI from measured flow</div>'+
     '<div class="cy-inline-fields">'+
-      field("Rated flow","GPM","TeeJet: last 2 digits ÷ 100",'<input class="cy-input mono" id="an-gpm" type="text" inputmode="decimal" placeholder="0.40">')+
-      field("at pressure","PSI","ISO tips: 40",'<input class="cy-input mono" id="an-psi" type="text" inputmode="decimal" value="40">')+
+      field("Rated flow","GPM","TeeJet: last 2 digits ÷ 100",'<input class="cy-input mono" id="an-gpm" type="text" inputmode="decimal" placeholder="0.40" value="'+v("ratedGpm")+'">')+
+      field("at pressure","PSI","ISO tips: 40",'<input class="cy-input mono" id="an-psi" type="text" inputmode="decimal" value="'+(existing?v("ratedPsi"):"40")+'">')+
     '</div>'+
     '<p class="cy-fineprint" style="grid-column:1/-1">No gauge needed — measured flow at each dial position gives PSI = ratedPSI × (measured ÷ rated GPM)². Leave blank if you don\'t have specs; you can still log gal/1k and time.</p>'+
-    '</div><div class="cy-modal-actions"><button class="cy-btn-ghost" id="an-cancel">Cancel</button>'+
-    '<button class="cy-btn-primary" id="an-add" style="width:auto">'+ic("plus")+'Add nozzle</button></div>';
-  modal('<h3 class="cy-modal-title">Add nozzle</h3>',body);
+    '</div><div class="cy-modal-actions">'+
+    (existing?'<button class="cy-btn-danger" id="an-delete">'+ic("trash")+'Delete nozzle</button>':"")+
+    '<button class="cy-btn-ghost" id="an-cancel">Cancel</button>'+
+    '<button class="cy-btn-primary" id="an-save" style="width:auto">'+(existing?ic("check")+'Save changes':ic("plus")+'Add nozzle')+'</button></div>';
+  modal('<h3 class="cy-modal-title">'+(existing?'Edit nozzle':'Add nozzle')+'</h3>',body);
   document.getElementById("an-cancel").onclick=closeModal;
-  document.getElementById("an-add").onclick=function(){
+  document.getElementById("an-save").onclick=function(){
     var name=document.getElementById("an-name").value.trim();
     if(!name){document.getElementById("an-name").focus();return;}
-    var id="cust-"+Date.now().toString(36);
-    state.customNozzles.push({id:id,name:name,
-      description:document.getElementById("an-desc").value.trim(),
-      info:document.getElementById("an-info").value.trim(),
-      ratedGpm:document.getElementById("an-gpm").value.trim(),
-      ratedPsi:document.getElementById("an-psi").value.trim()||"40",
-      builtin:false,chart:null});
-    saveNozzles();
-    state.cal.nozzleId=id;
+    var noz=existing||{id:"cust-"+Date.now().toString(36),builtin:false,chart:null};
+    noz.name=name;
+    noz.description=document.getElementById("an-desc").value.trim();
+    noz.info=document.getElementById("an-info").value.trim();
+    noz.ratedGpm=document.getElementById("an-gpm").value.trim();
+    noz.ratedPsi=document.getElementById("an-psi").value.trim()||"40";
+    if(!existing) state.customNozzles.push(noz);
+    else SPEEDS.forEach(function(s){ // keep saved records' display name in sync
+      var r=state.calibrations[noz.id+"|"+s];
+      if(r) r.nozzleName=name;
+    });
+    var ok=saveNozzles()&&(existing?saveCals():true);
+    state.cal.nozzleId=noz.id;
     closeModal();
     state.tab="calibrate";render();
+    if(!ok) toast("Couldn't save — storage is full or blocked.",true);
+  };
+  var del=document.getElementById("an-delete");
+  if(del) del.onclick=function(){
+    var msg="Delete \""+existing.name+"\"?";
+    if(calKeys.length) msg+=" Its "+calKeys.length+" saved calibration"+(calKeys.length>1?"s":"")+" will be deleted too.";
+    if(!window.confirm(msg)) return;
+    state.customNozzles=state.customNozzles.filter(function(n){return n.id!==existing.id;});
+    SPEEDS.forEach(function(s){delete state.calibrations[existing.id+"|"+s];});
+    saveNozzles();saveCals();
+    if(state.cal.nozzleId===existing.id) state.cal.nozzleId=STOCK_NOZZLES[0].id;
+    closeModal();render();
+    toast("Deleted "+existing.name);
   };
 }
 
 function logText(){
-  var lines=["CYCLONE 3 CALIBRATION LOG — exported "+nowET(),"Tank: 4 gal (FZVAAJ-3)",""];
+  var lines=["CYCLONE 3 CALIBRATION LOG — exported "+nowLocal(),"Tank: 4 gal (FZVAAJ-3)",""];
   allNozzles().forEach(function(noz){
     var rs=SPEEDS.map(function(s){return state.calibrations[noz.id+"|"+s];}).filter(Boolean);
     if(!rs.length) return;
@@ -749,37 +769,97 @@ function copyLog(){
     '<textarea class="cy-backup-ta" rows="12" readonly>'+esc(t)+'</textarea>');
   var ta=document.querySelector(".cy-backup-ta");if(ta){ta.focus();ta.select();}
 }
+function backupJSON(){
+  return JSON.stringify({app:"cyclone3-cal",version:1,exportedAt:nowLocal(),customNozzles:state.customNozzles,calibrations:state.calibrations},null,2);
+}
+function downloadBackup(){
+  var d=new Date(), pad=function(n){return String(n).padStart(2,"0");};
+  var name="cyclone3-backup-"+d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+".json";
+  var blob=new Blob([backupJSON()],{type:"application/json"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},2000);
+}
+function applyRestore(raw,mode){
+  var imp=document.getElementById("bk-import");
+  function bad(msg){
+    if(imp){imp.style.borderColor="#b3372c";imp.placeholder=msg;}
+    toast(msg,true);
+  }
+  var obj;
+  try{obj=JSON.parse(raw);}catch(e){bad("That wasn't valid backup JSON — paste or import the full exported text.");return;}
+  var clean=sanitizeBackup(obj);
+  if(!clean){bad("That JSON isn't a Cyclone 3 backup (no calibrations or nozzles found).");return;}
+  var nCal=Object.keys(clean.calibrations).length, nNoz=clean.customNozzles.length;
+  if(nCal===0&&nNoz===0){bad("No usable records in that backup"+(clean.dropped?" — all "+clean.dropped+" were invalid.":"."));return;}
+  if(mode==="replace"){
+    var existing=Object.keys(state.calibrations).length;
+    if(existing>0&&!window.confirm("Replace ALL current data? Your "+existing+" saved calibration"+(existing>1?"s":"")+" will be overwritten."))
+      return;
+    state.calibrations=clean.calibrations;
+    state.customNozzles=clean.customNozzles;
+  }else{ // merge: incoming records win on conflicts, nothing else is touched
+    Object.keys(clean.calibrations).forEach(function(k){state.calibrations[k]=clean.calibrations[k];});
+    clean.customNozzles.forEach(function(n){
+      if(!state.customNozzles.some(function(x){return x.id===n.id;})) state.customNozzles.push(n);
+    });
+  }
+  var ok=saveCals()&&saveNozzles();
+  closeModal();render();
+  var msg="Restored "+nCal+" calibration"+(nCal===1?"":"s")+" and "+nNoz+" custom nozzle"+(nNoz===1?"":"s")+
+    (clean.dropped?" ("+clean.dropped+" invalid record"+(clean.dropped===1?"":"s")+" skipped)":"");
+  if(ok) toast(msg);
+  else toast("Restore loaded, but couldn't be saved — storage is full or blocked.",true);
+}
 function openBackup(){
-  var data=JSON.stringify({app:"cyclone3-cal",version:1,exportedAt:nowET(),customNozzles:state.customNozzles,calibrations:state.calibrations},null,2);
-  tryCopy(data);
-  var body='<p class="cy-note">Your full log as JSON. Copy it somewhere safe (Notes, Files, email). To move to a new device or recover, paste a backup below and tap Restore.</p>'+
+  var data=backupJSON();
+  var body='<p class="cy-note">Your full log as JSON. Download it or copy it somewhere safe (Notes, Files, email). To move to a new device or recover, import or paste a backup below.</p>'+
     '<div class="cy-subhead" style="margin-top:4px">Export</div>'+
-    '<textarea class="cy-backup-ta" id="bk-export" rows="7" readonly>'+esc(data)+'</textarea>'+
-    '<div class="cy-subhead" style="margin-top:12px">Restore — paste a backup, then tap Restore</div>'+
-    '<textarea class="cy-backup-ta" id="bk-import" rows="5" placeholder="paste backup JSON here"></textarea>'+
-    '<div class="cy-modal-actions"><button class="cy-btn-ghost" id="bk-close">Close</button>'+
-    '<button class="cy-btn-primary" id="bk-restore" style="width:auto">'+ic("db")+'Restore</button></div>';
+    '<textarea class="cy-backup-ta" id="bk-export" rows="6" readonly aria-label="Backup JSON">'+esc(data)+'</textarea>'+
+    '<div class="cy-modal-actions" style="justify-content:flex-start;margin-top:8px">'+
+      '<button class="cy-btn-ghost" id="bk-download">'+ic("save")+'Download file</button>'+
+      '<button class="cy-btn-ghost" id="bk-copy">'+ic("copy")+'Copy</button></div>'+
+    '<div class="cy-subhead" style="margin-top:12px">Restore — import a file or paste a backup</div>'+
+    '<textarea class="cy-backup-ta" id="bk-import" rows="4" placeholder="paste backup JSON here" aria-label="Backup JSON to restore"></textarea>'+
+    '<input type="file" id="bk-file" accept=".json,application/json" style="display:none">'+
+    '<p class="cy-fineprint"><b>Merge</b> adds the backup to what\'s here (backup wins on conflicts). <b>Replace</b> wipes current data first.</p>'+
+    '<div class="cy-modal-actions"><button class="cy-btn-ghost" id="bk-filebtn">'+ic("db")+'Import file…</button>'+
+    '<button class="cy-btn-ghost" id="bk-close">Close</button>'+
+    '<button class="cy-btn-ghost" id="bk-replace">Replace all</button>'+
+    '<button class="cy-btn-primary" id="bk-merge" style="width:auto">'+ic("check")+'Merge</button></div>';
   modal('<h3 class="cy-modal-title">Backup &amp; restore</h3>',body);
-  var ex=document.getElementById("bk-export");if(ex){ex.focus();ex.select();}
   document.getElementById("bk-close").onclick=closeModal;
-  document.getElementById("bk-restore").onclick=function(){
-    var raw=document.getElementById("bk-import").value.trim();
-    if(!raw) return;
-    try{
-      var obj=JSON.parse(raw);
-      if(obj.calibrations) state.calibrations=obj.calibrations;
-      if(obj.customNozzles) state.customNozzles=obj.customNozzles;
-      saveCals();saveNozzles();closeModal();render();
-    }catch(e){
+  document.getElementById("bk-download").onclick=downloadBackup;
+  document.getElementById("bk-copy").onclick=function(){
+    tryCopy(data);
+    var ex=document.getElementById("bk-export");if(ex){ex.focus();ex.select();}
+  };
+  function pasted(){return document.getElementById("bk-import").value.trim();}
+  document.getElementById("bk-merge").onclick=function(){var r=pasted();if(r) applyRestore(r,"merge");};
+  document.getElementById("bk-replace").onclick=function(){var r=pasted();if(r) applyRestore(r,"replace");};
+  var fileInput=document.getElementById("bk-file");
+  document.getElementById("bk-filebtn").onclick=function(){fileInput.click();};
+  fileInput.onchange=function(){
+    var f=fileInput.files&&fileInput.files[0];
+    if(!f) return;
+    var reader=new FileReader();
+    reader.onload=function(){
       var imp=document.getElementById("bk-import");
-      imp.style.borderColor="#b3372c";imp.value="";imp.placeholder="That wasn't valid backup JSON — paste the full exported text.";
-    }
+      if(imp) imp.value=String(reader.result);
+    };
+    reader.readAsText(f);
   };
 }
 
 /* ---------- go ---------- */
 load();
 render();
+
+// Offline support — skipped silently on file:// where service workers can't run
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1")){
+  navigator.serviceWorker.register("sw.js").catch(function(){});
+}
 })();
 </script>
 </body>
