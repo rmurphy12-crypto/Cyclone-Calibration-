@@ -1,0 +1,24 @@
+{
+  "name": "Cyclone 3 Sprayer Calibration",
+  "short_name": "Cyclone 3",
+  "description": "Calibration log and mix calculator for the FlowZone Cyclone 3 (FZVAAJ-3) backpack sprayer.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#eaeee6",
+  "theme_color": "#1b241f",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
